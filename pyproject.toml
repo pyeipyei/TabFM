@@ -35,6 +35,7 @@ dependencies = [
     "orbax-checkpoint",
     "pandas",
     "scikit-learn",
+    "scipy",
     "typeguard<3",
     "huggingface-hub",
 ]
@@ -56,6 +57,13 @@ dev = [
     "pytest-xdist",
     "pylint>=2.6.0",
     "pyink",
+]
+
+# Dependencies for the runnable scripts under examples/. The TabArena examples
+# pull datasets from OpenML; scikit-learn (a core dep) supplies the metrics.
+# Installed through `pip install tabfm[examples]`.
+examples = [
+    "openml",
 ]
 
 # GPU support. The base `jax`/`jaxlib` deps are CPU-only; install this extra
