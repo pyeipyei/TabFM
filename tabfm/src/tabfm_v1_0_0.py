@@ -30,7 +30,7 @@ from tabfm.src import checkpointing
 from tabfm.src.model import TabFM, YEmbeddingScheme
 
 # Hugging Face repository ID for TabFM v1.0.0
-HF_REPO_ID = "google/tabfm-v1-0-0"
+HF_REPO_ID = "google/tabfm-1.0.0-jax"
 
 
 @dataclass(frozen=True)
