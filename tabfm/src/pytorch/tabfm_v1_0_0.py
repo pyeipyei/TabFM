@@ -17,6 +17,7 @@ import os
 import threading
 from typing import Any, Dict, Optional
 from absl import logging
+import torch
 from huggingface_hub import PyTorchModelHubMixin, constants, snapshot_download
 
 from tabfm.src.pytorch.model import TabFM
@@ -110,15 +111,26 @@ def load(
     checkpoint_path: Optional[str] = None,
     *,
     device: Optional[str] = None,
+    dtype: Any = torch.bfloat16,
     use_cache: bool = True,
 ) -> "TabFM_HF":
   """Loads the PyTorch TabFM v1.0.0 model with pre-trained weights.
+
+  The checkpoint is stored in float32, but the model is designed to run in
+  bfloat16 (matching the JAX release's ``dtype=jnp.bfloat16`` compute default),
+  with a few internal fp32 upcasts. ``dtype`` casts the model accordingly; pass
+  ``None`` to keep the float32 weights.
+
+  ``dtype`` is provided for float32 debugging / quality comparison; the model is
+  designed for bfloat16 and this option may be removed in a future release.
 
   Args:
     model_type: 'classification' or 'regression'.
     checkpoint_path: Local directory or weights file. If None, downloads from
       Hugging Face (google/tabfm-1.0.0-pytorch).
     device: Target device (e.g. 'cuda', 'cpu'). Defaults to 'cpu'.
+    dtype: Compute dtype to cast the model to after loading. Defaults to
+      bfloat16; pass None to keep the float32 weights.
     use_cache: Reuse a process-wide cached model for identical settings.
 
   Returns:
@@ -130,7 +142,7 @@ def load(
         "Must be 'classification' or 'regression'."
     )
 
-  cache_key = (model_type, checkpoint_path, device)
+  cache_key = (model_type, checkpoint_path, device, str(dtype))
   if use_cache:
     _LOAD_CACHE_LOCK.acquire()
   try:
@@ -159,6 +171,9 @@ def load(
             local_dir,
             is_classifier=(model_type == "classification"),
         )
+
+    if dtype is not None:
+      model = model.to(dtype)  # engage the bf16 compute design (see docstring)
 
     if device is not None:
       model = model.to(device)
