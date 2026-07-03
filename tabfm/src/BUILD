@@ -31,6 +31,19 @@ py_test(
     ],
 )
 
+py_test(
+    name = "classifier_and_regressor_multidevice_test",
+    srcs = ["classifier_and_regressor_multidevice_test.py"],
+    deps = [
+        ":classifier_and_regressor",
+        "//tabfm/src/jax:model",
+        "@pip//absl_py",
+        "@pip//flax",
+        "@pip//jax",
+        "@pip//numpy",
+    ],
+)
+
 py_library(
     name = "torch_convert",
     srcs = ["hugging_face/torch_convert.py"],

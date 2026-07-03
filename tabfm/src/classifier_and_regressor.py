@@ -2260,10 +2260,6 @@ class TabFMClassifier(ClassifierMixin, BaseEstimator):
       )
 
       if not hasattr(self, _has_compiled_attr):
-        data_sharding = NamedSharding(
-            jax.sharding.Mesh(jax.devices(), ("data",)), PartitionSpec("data")
-        )
-
         if cat_masks is not None and hasattr(self.model, "cell_embedder"):
 
           @nnx.jit(
@@ -3039,10 +3035,6 @@ class TabFMRegressor(RegressorMixin, BaseEstimator):
       )
 
       if not hasattr(self, _has_compiled_attr):
-        data_sharding = NamedSharding(
-            jax.sharding.Mesh(jax.devices(), ("data",)), PartitionSpec("data")
-        )
-
         if cat_masks is not None and hasattr(self.model, "cell_embedder"):
 
           @nnx.jit(
