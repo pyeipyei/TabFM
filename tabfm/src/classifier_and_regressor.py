@@ -3256,6 +3256,7 @@ class TabFMRegressor(RegressorMixin, BaseEstimator):
   @jt.typed
   def _predict_internal(self, X: Any) -> jt.Float[Array | np.ndarray, "E T"]:
     """Predict regression target for test samples."""
+    check_is_fitted(self)
     if isinstance(X, np.ndarray) and len(X.shape) == 1:
       raise ValueError("The provided input X is one-dimensional. Reshape your data.")
 
