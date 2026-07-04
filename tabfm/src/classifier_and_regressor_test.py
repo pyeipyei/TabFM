@@ -17,6 +17,7 @@ from unittest import mock
 from absl.testing import absltest
 import numpy as np
 import pandas as pd
+from sklearn.exceptions import NotFittedError
 
 try:
   from flax import nnx
@@ -1009,6 +1010,16 @@ class LabelEncodingTest(absltest.TestCase):
     clf.fit(x, y)
     np.testing.assert_array_equal(clf.classes_, np.array(["a", "z"]))
     self.assertEqual(clf.y_encoder_.mode, "alphabetical")
+
+
+class NotFittedTest(absltest.TestCase):
+
+  def test_predict_before_fit_raises_not_fitted(self):
+    X = np.zeros((3, 2))
+    with self.assertRaises(NotFittedError):
+      TabFMRegressor(model=mock.Mock()).predict(X)
+    with self.assertRaises(NotFittedError):
+      TabFMClassifier(model=mock.Mock()).predict(X)
 
 
 class DatetimeDetectionTest(absltest.TestCase):
