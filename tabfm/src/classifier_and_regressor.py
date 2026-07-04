@@ -1816,6 +1816,14 @@ def _predict_step_pytorch(
   return out_t.float().cpu().numpy()  # upcast: numpy has no bfloat16
 
 
+# Compiled predict step functions memoized on the estimators by
+# _batch_forward. They close over nnx.jit state and cannot be pickled.
+_COMPILED_PREDICT_CACHE_ATTRS = (
+    "_predict_step_compiled_with_cat",
+    "_predict_step_compiled_no_cat",
+)
+
+
 # ---------------------------------------------------------------------------
 # Classifier
 # ---------------------------------------------------------------------------
@@ -2404,6 +2412,18 @@ class TabFMClassifier(ClassifierMixin, BaseEstimator):
         outputs.append(out)
 
       return np.concatenate(outputs, axis=0)
+
+  def __getstate__(self):
+    """Drops memoized compiled predict functions from the pickled state.
+
+    The first predict memoizes nnx.jit-compiled step functions on the
+    estimator (see _batch_forward). Those closures cannot be pickled; they
+    are pure caches and are rebuilt lazily on the next predict.
+    """
+    state = dict(super().__getstate__())
+    for attr in _COMPILED_PREDICT_CACHE_ATTRS:
+      state.pop(attr, None)
+    return state
 
   @jt.typed
   def predict_oof_proba(self, cv: int = 5) -> jt.Float[Array | np.ndarray, "E N K"]:
@@ -3175,6 +3195,18 @@ class TabFMRegressor(RegressorMixin, BaseEstimator):
   def _inverse_transform_y(self, y_scaled: np.ndarray) -> np.ndarray:
     """Inverse transform target values."""
     return self.y_scaler_.inverse_transform(y_scaled.reshape(-1, 1)).flatten()
+
+  def __getstate__(self):
+    """Drops memoized compiled predict functions from the pickled state.
+
+    The first predict memoizes nnx.jit-compiled step functions on the
+    estimator (see _batch_forward). Those closures cannot be pickled; they
+    are pure caches and are rebuilt lazily on the next predict.
+    """
+    state = dict(super().__getstate__())
+    for attr in _COMPILED_PREDICT_CACHE_ATTRS:
+      state.pop(attr, None)
+    return state
 
   @jt.typed
   def predict_oof(self, cv: int = 5) -> jt.Float[Array | np.ndarray, "E N"]:
