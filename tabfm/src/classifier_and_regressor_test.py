@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pickle
 import unittest
 from unittest import mock
 from absl.testing import absltest
@@ -1077,6 +1078,57 @@ class NotFittedTest(absltest.TestCase):
       TabFMRegressor(model=mock.Mock()).predict(X)
     with self.assertRaises(NotFittedError):
       TabFMClassifier(model=mock.Mock()).predict(X)
+
+
+@unittest.skipUnless(HAS_JAX, "JAX is required")
+class EstimatorPickleTest(absltest.TestCase):
+  """Fitted estimators must survive pickle after a predict.
+
+  AutoGluon / TabArena save the fitted estimator with stdlib pickle. The
+  first predict memoizes nnx.jit-compiled step functions on the estimator
+  (see _batch_forward); those closures cannot be pickled, so they are
+  dropped from the pickled state and rebuilt lazily after restore.
+  """
+
+  def _tiny_model(self, loss):
+    return tabfm_model.TabFM(
+        loss=loss,
+        max_classes=10,
+        embed_dim=8,
+        col_num_blocks=1,
+        col_nhead=2,
+        col_num_inds=8,
+        row_num_blocks=1,
+        row_nhead=2,
+        row_num_cls=1,
+        icl_num_blocks=1,
+        icl_nhead=2,
+        rngs=nnx.Rngs(0),
+    )
+
+  def test_classifier_pickle_round_trip_after_predict(self):
+    classifier = TabFMClassifier(
+        model=self._tiny_model("cross_entropy"), n_estimators=2
+    )
+    X = np.random.rand(12, 3)
+    X_test = np.random.rand(4, 3)
+    classifier.fit(X, np.array([0, 1] * 6))
+    proba = classifier.predict_proba(X_test)
+
+    restored = pickle.loads(pickle.dumps(classifier))
+
+    np.testing.assert_allclose(restored.predict_proba(X_test), proba)
+
+  def test_regressor_pickle_round_trip_after_predict(self):
+    regressor = TabFMRegressor(model=self._tiny_model("rmse"), n_estimators=2)
+    X = np.random.rand(12, 3)
+    X_test = np.random.rand(4, 3)
+    regressor.fit(X, np.random.rand(12))
+    preds = regressor.predict(X_test)
+
+    restored = pickle.loads(pickle.dumps(regressor))
+
+    np.testing.assert_allclose(restored.predict(X_test), preds)
 
 
 class DatetimeDetectionTest(absltest.TestCase):
