@@ -36,6 +36,17 @@ To release a new version (e.g. from `1.0.0` -> `2.0.0`):
 * `TabFMRegressor.predict` before `fit` now raises `NotFittedError`.
 * `TabFMClassifier.predict` no longer returns object-dtype labels.
 * README regression example now loads the regression checkpoint.
+* Loading a checkpoint whose type does not match the estimator now fails fast
+  with an actionable error, instead of a cryptic squeeze error (classification
+  weights in `TabFMRegressor`) or silently wrong predictions (regression
+  weights in `TabFMClassifier`).
+* The sklearn layer handles duplicate and non-string column names: duplicates
+  fail fast with a clear message, and datetime columns with integer labels no
+  longer crash.
+* Fitted estimators and the PyTorch model are now picklable, which AutoGluon /
+  TabArena require to save a fitted model. The PyTorch gelu activation is a
+  module-level function, and the JAX estimators drop their memoized compiled
+  predict functions on pickle and rebuild them lazily.
 
 ### Changed
 
