@@ -1,0 +1,16 @@
+age,country,income,account_type,churn
+25,US,50000,premium,yes
+40,UK,70000,basic,no
+31,US,45000,premium,yes
+52,DE,90000,basic,no
+29,FR,55000,standard,yes
+45,UK,80000,premium,no
+36,DE,65000,standard,no
+60,US,100000,premium,no
+22,FR,40000,basic,yes
+48,DE,75000,standard,no
+35,US,62000,premium,yes
+55,UK,85000,basic,no
+27,FR,48000,standard,yes
+43,DE,72000,premium,no
+38,US,58000,basic,yes

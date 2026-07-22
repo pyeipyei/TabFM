@@ -23,10 +23,10 @@ def run_example(model=None) -> np.ndarray:
   """Generates dummy data and runs regression."""
   if model is None:
     # Option A: JAX Backend (default)
-    model = tabfm.tabfm_v1_0_0_jax.load(model_type="regression")
+    #model = tabfm.tabfm_v1_0_0_jax.load(model_type="regression")
 
     # Option B: PyTorch Backend
-    # model = tabfm.tabfm_v1_0_0_pytorch.load(model_type="regression")
+     model = tabfm.tabfm_v1_0_0_pytorch.load(model_type="regression")
 
   # 2. Initialize scikit-learn compatible regressor
   reg = tabfm.TabFMRegressor(model=model)
@@ -45,6 +45,7 @@ def run_example(model=None) -> np.ndarray:
 
   # 4. Fit and predict
   reg.fit(X_train, y_train)
+  print(reg.classes_)
   preds = reg.predict(X_test)
   return preds
 

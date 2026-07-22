@@ -96,10 +96,10 @@ def run_example(model=None):
   """
   if model is None:
     # Option A: JAX Backend (default)
-    model = tabfm.tabfm_v1_0_0_jax.load(model_type="classification")
+    #model = tabfm.tabfm_v1_0_0_jax.load(model_type="classification")
 
     # Option B: PyTorch Backend
-    # model = tabfm.tabfm_v1_0_0_pytorch.load(model_type="classification")
+    model = tabfm.tabfm_v1_0_0_pytorch.load(model_type="classification")
 
   x_train, y_train, x_test, y_test = _load_fold_0(TASK_ID)
 
